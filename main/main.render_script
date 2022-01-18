@@ -106,6 +106,7 @@ function render_shadows(self)
     render.enable_state(render.STATE_DEPTH_TEST)
     render.disable_state(render.STATE_BLEND)
     render.disable_state(render.STATE_CULL_FACE)
+    --render.set_cull_face(render.FACE_FRONT)
 
     render.set_render_target(self.shadow_target, { transient = {render.BUFFER_DEPTH_BIT} })
     render.clear({[render.BUFFER_COLOR_BIT] = vmath.vector4(0,0,0,1), [render.BUFFER_DEPTH_BIT] = 1})
@@ -113,6 +114,8 @@ function render_shadows(self)
     render.enable_material("depth")
     render.draw(self.model_pred)
     render.disable_material()
+
+    --render.set_cull_face(render.FACE_BACK)
 
     --filtering
 
@@ -178,6 +181,12 @@ function update(self)
     self.cb.mtx_light2 = mtx_light.c2
     self.cb.mtx_light3 = mtx_light.c3
     self.cb.light = light
+
+    local mtx_lv =  self.light_transform * vmath.inv(self.view)
+    self.cb.mtx_lv0 = mtx_lv.c0
+    self.cb.mtx_lv1 = mtx_lv.c1
+    self.cb.mtx_lv2 = mtx_lv.c2
+    self.cb.mtx_lv3 = mtx_lv.c3
     
     render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
     render.enable_state(render.STATE_CULL_FACE)
@@ -187,12 +196,14 @@ function update(self)
     render.enable_texture(1, self.shadow_target, render.BUFFER_COLOR_BIT)
     render.draw(self.model_pred, self.cb)
     render.disable_texture(1)
-    
+
     render.disable_state(render.STATE_DEPTH_TEST)
     render.set_depth_mask(false)
+
     render.enable_texture(0, self.shadow_target, render.BUFFER_COLOR_BIT)
     --render.draw(self.quad_pred)
     render.disable_texture(0)
+    
     
     -- debug rendering
     --

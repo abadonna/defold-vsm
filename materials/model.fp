@@ -9,6 +9,11 @@ uniform mediump vec4 mtx_light1;
 uniform mediump vec4 mtx_light2;
 uniform mediump vec4 mtx_light3;
 
+uniform mediump vec4 mtx_lv0;
+uniform mediump vec4 mtx_lv1;
+uniform mediump vec4 mtx_lv2;
+uniform mediump vec4 mtx_lv3;
+
 uniform lowp sampler2D tex0;
 uniform lowp sampler2D tex1;
 uniform lowp vec4 tint;
@@ -17,34 +22,31 @@ float rgba_to_float(vec4 rgba)
     return dot(rgba, vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0));
 }
 
-float vec2_to_float(vec2 v) {
-    return dot(v, vec2(1.0, 1./255.0) );
-}
-
 mat4 get_shadow_mat()
 {
     return mat4(mtx_light0, mtx_light1, mtx_light2, mtx_light3);
 }
 
-float linstep(float min, float max, float v) 
+mat4 get_light_mat()
 {
-    return clamp((v - min) / (max-min), 0., 1.);
+    return mat4(mtx_lv0, mtx_lv1, mtx_lv2, mtx_lv3);
 }
 
 float get_shadow(vec3 proj)
 {
-    if (proj.x < 0. ||proj.x > 1. || proj.y < 0. ||proj.y > 1.)
+    if (proj.x < 0. || proj.x > 1. || proj.y < 0. || proj.y > 1.)
     {
-        return  1.;
+        return 1;
     }
-    vec4 data = texture2D(tex1, proj.xy);
-    float m1 = vec2_to_float(data.xy);
-    float m2 = vec2_to_float(data.zw);
-    float p = step(proj.z, m1);
-    float variance = max(m2 -  m1 * m1, .00002);
-    float d = proj.z - m1;
-    float pMax = linstep(0.5, 1., variance / (variance  + d * d));
-    return max(p, pMax);
+    const float esm_bias   = -1.;
+    const float esm_factor = 1.;
+
+    float occluder = rgba_to_float(texture(tex1, proj.xy));
+    vec4 p  = get_light_mat() * var_position;
+
+    
+    float receiver = exp(esm_bias - esm_factor * p.z);
+    return 1.- occluder * receiver;
 }
 void main()
 {
@@ -60,7 +62,7 @@ void main()
 
     vec4 dp = get_shadow_mat() * var_position;
     dp = dp / dp.w;
-    
+
     float shadow = clamp(get_shadow(dp.xyz), 0.3, 1.);
 
     gl_FragColor = vec4(shadow*color.rgb*diff_light,1.0);
