@@ -43,7 +43,7 @@ float get_shadow(vec3 proj)
     float p = step(proj.z, m1);
     float variance = max(m2 -  m1 * m1, .00002);
     float d = proj.z - m1;
-    float pMax = linstep(0.5, 1., variance / (variance  + d * d));
+    float pMax = linstep(0.8, 1., variance / (variance  + d * d));
     return max(p, pMax);
 }
 void main()
