@@ -12,14 +12,6 @@ uniform mediump vec4 mtx_light3;
 uniform lowp sampler2D tex0;
 uniform lowp sampler2D tex1;
 uniform lowp vec4 tint;
-float rgba_to_float(vec4 rgba)
-{
-    return dot(rgba, vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/16581375.0));
-}
-
-float vec2_to_float(vec2 v) {
-    return dot(v, vec2(1.0, 1./255.0) );
-}
 
 mat4 get_shadow_mat()
 {
@@ -38,12 +30,12 @@ float get_shadow(vec3 proj)
         return  1.;
     }
     vec4 data = texture2D(tex1, proj.xy);
-    float m1 = vec2_to_float(data.xy);
-    float m2 = vec2_to_float(data.zw);
+    float m1 = data.x;
+    float m2 = data.y;
     float p = step(proj.z, m1);
     float variance = max(m2 -  m1 * m1, .00002);
     float d = proj.z - m1;
-    float pMax = linstep(0.5, 1., variance / (variance  + d * d));
+    float pMax = linstep(0.9, 1., variance / (variance  + d * d));
     return max(p, pMax);
 }
 void main()

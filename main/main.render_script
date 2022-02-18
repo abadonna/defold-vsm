@@ -1,3 +1,15 @@
+-- Floating point texture formats
+render.FORMAT_RGB16F = 22
+render.FORMAT_RGB32F = 23
+render.FORMAT_RGBA16F = 24
+render.FORMAT_RGBA32F = 25
+render.FORMAT_R16F = 26
+render.FORMAT_RG16F = 27
+render.FORMAT_R32F = 28
+render.FORMAT_RG32F = 29
+
+
+
 --
 -- projection that centers content with maintained aspect ratio and optional zoom
 --
@@ -33,7 +45,7 @@ end
 
 local function create_rt(w,h, filter, has_depth)
     local color_params = {
-        format     = render.FORMAT_RGBA,
+        format     = render.FORMAT_RGB32F,
         width      = w,
         height     = h,
         min_filter = filter,
@@ -116,11 +128,11 @@ function render_shadows(self)
 
     --filtering
 
-    --[[
+
     render.disable_state(render.STATE_DEPTH_TEST)
     render.set_depth_mask(false)
     
-    local scale = 1;
+    local scale = 1.;
     self.cb.scale = vmath.vector4(scale/ w, 0, 0, 0);
     render.set_render_target(self.blur_target)
     render.enable_texture(0, self.shadow_target, render.BUFFER_COLOR_BIT)
@@ -134,7 +146,7 @@ function render_shadows(self)
     render.draw(self.quad_pred, self.cb)
     render.disable_material()
     render.disable_texture(0)
-    --]]
+
     
     render.set_render_target(render.RENDER_TARGET_DEFAULT)
 end
